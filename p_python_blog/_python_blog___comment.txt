@@ -1,0 +1,76 @@
+Описание тестового задания:
+
+создать скрипт, который из архива https://blog.python.org/ - BLOG ARCHIVE (eng) достает информацию по каждому посту за все время:
+    - дата публикации
+    - заголовок
+    - текст
+    - автор 
+в каждом посте найти все ссылки, которые имеют отношение к релизу (например https://www.python.org/downloads/release/python-3100a7/)
+и на этой странице получить:
+    - title
+    - h1
+    - дата релиза
+    - текст
+    - все ссылки на PEP (например, https://www.python.org/dev/peps/pep-0623/)
+    - все ссылки и остальную информацию из таблицы Files
+создать нужные таблицы и связи и сохранять результаты в базу данных (sqlite3)
+код разместить на github
+
+*******************************************
+Работа выполнена на Python + BeautifulSoup
+Выбраны все посты/релизы/таблицы Python за 2011-2022 гг и сохранены в БД SQLITE python_blog.db
+
+Модули Python:
+- python_blog.py        --- основной
+- module_settings.py    --- параметры проекта
+- module_db_sqlite.py   --- модули для работы с БД SQLite
+- modules_functions.py  --- дополнительные модули
+
+Результат работы программы сохранен в SQLITE --- python_blog.db
+
+Таблицы:
+
+    CREATE TABLE process (         - таблица для сохранения параметров процесса
+    process_key TEXT PRIMARY KEY,  - ключ
+    process_data TEXT);            - BLOB (or Text) -pickle.damps - сохр. параметры процесса
+                                     для возобновления работы после збоя или отключения интернета
+
+    CREATE TABLE blog (     - таблица постов
+    p_id TEXT PRIMARY KEY,  - уникальный номер поста в БД сайта (https://blog.python.org/)
+    p_url TEXT,             - url поста
+    p_date TEXT,            - дата
+    p_title TEXT,           - title
+    p_author TEXT,          - автор
+    p_content TEXT,         - текст поста
+    p_release TEXT);        - список (url) релизов в посте (в виде строки -"url1,url2,...")
+
+    CREATE TABLE release (  - таблица релизов
+    r_url TEXT PRIMARY KEY, - уникальный url релиза
+    r_date TEXT,            - дата
+    r_title TEXT,           - title     
+    r_h1 TEXT,              - h1
+    r_content TEXT,         - текст страницы релиза (очищеный и отформатированый {/n)
+    r_peps_list TEXT,       - список url PEPS релиза ("PEPS1,PEPS2,...)
+
+    CREATE TABLE files (    - таблица с информацией из таблицы Files релиза
+    f_url_release TEXT,     - уникальный урл релиза
+    f_Version TEXT,         - ! список из 2 полей (название + урл)
+    r_Operating_System TEXT,
+    r_Description TEXT,
+    r_MD5_Sum TEXT,
+    r_File_Size TEXT,
+    r_GPG TEXT,
+    r_SigStore_CRT TEXT,
+    r_SigStore_SIG TEXT);   - ! список из 2 полей (название + урл)
+
+    CREATE TABLE log     (  - таблица - лог хода выполнения проекта
+    e_level TEXT ,          - уровень лога (debug, info, critical, error, warning, ...)
+    e_value TEXT,           - имя поля в режиме - debug
+    e_line TEXT);           - комментарий
+
+1. Ведение лога выполнено по аналогии с библиотекой logging + реализован механизм вывода строк в разных цветовых схемах.
+Программа в ходе выполения выводит на екран строки лога процесса и сохраняет их в БД (таблица log).
+
+2. Реализован процесс сохранения параметров работы и возобновления с места збоя или отключения интернета.
+
+3. Опробованы различные варианты работы с БД SQLite и выбран оптимальный по быстродействию.
